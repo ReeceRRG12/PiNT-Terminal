@@ -1,0 +1,30 @@
+name: Build desktop beta
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e ".[test,build]"
+      - run: python -m pytest -q
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - run: python -m PyInstaller --noconfirm --clean "PiNT Terminal.spec"
+      - if: runner.os == 'macOS'
+        run: tar -czf PiNT-Terminal-macOS.tar.gz -C dist "PiNT Terminal.app"
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path 'dist/PiNT Terminal' -DestinationPath PiNT-Terminal-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PiNT-Terminal-${{ matrix.os }}
+          path: |
+            PiNT-Terminal-*.tar.gz
+            PiNT-Terminal-*.zip

@@ -1,0 +1,482 @@
+[
+  {
+    "name": "asyncssh",
+    "version": "2.24.1",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "http://asyncssh.timeheart.net",
+      "https://asyncssh.readthedocs.io",
+      "https://github.com/ronf/asyncssh",
+      "https://github.com/ronf/asyncssh/issues"
+    ],
+    "package_url": "https://pypi.org/project/asyncssh/2.24.1/",
+    "license": "EPL-2.0 OR GPL-2.0-or-later",
+    "notice_files": [
+      "licenses/asyncssh/LICENSE"
+    ]
+  },
+  {
+    "name": "telnetlib3",
+    "version": "5.0.1",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/jquast/telnetlib3",
+      "https://telnetlib3.readthedocs.io",
+      "https://github.com/jquast/telnetlib3",
+      "https://github.com/jquast/telnetlib3/issues"
+    ],
+    "package_url": "https://pypi.org/project/telnetlib3/5.0.1/",
+    "license": "ISC",
+    "notice_files": [
+      "licenses/telnetlib3/LICENSE.txt"
+    ]
+  },
+  {
+    "name": "cryptography",
+    "version": "50.0.2",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://cryptography.io/en/latest/changelog/",
+      "https://cryptography.io/",
+      "https://github.com/pyca/cryptography",
+      "https://github.com/pyca/cryptography/issues",
+      "https://github.com/pyca/cryptography/"
+    ],
+    "package_url": "https://pypi.org/project/cryptography/50.0.2/",
+    "license": "Apache-2.0 OR BSD-3-Clause",
+    "notice_files": [
+      "licenses/cryptography/LICENSE",
+      "licenses/cryptography/LICENSE.APACHE",
+      "licenses/cryptography/LICENSE.BSD"
+    ]
+  },
+  {
+    "name": "cffi",
+    "version": "2.1.1",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://cffi.readthedocs.io/",
+      "https://cffi.readthedocs.io/en/latest/whatsnew.html",
+      "https://github.com/python-cffi/cffi/releases",
+      "https://groups.google.com/forum/#!forum/python-cffi",
+      "https://github.com/python-cffi/cffi",
+      "https://github.com/python-cffi/cffi/issues"
+    ],
+    "package_url": "https://pypi.org/project/cffi/2.1.1/",
+    "license": "MIT-0",
+    "notice_files": [
+      "licenses/cffi/LICENSE"
+    ]
+  },
+  {
+    "name": "pycparser",
+    "version": "3.12",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/eliben/pycparser"
+    ],
+    "package_url": "https://pypi.org/project/pycparser/3.12/",
+    "license": "BSD-3-Clause",
+    "notice_files": [
+      "licenses/pycparser/LICENSE"
+    ]
+  },
+  {
+    "name": "pyte",
+    "version": "0.8.2",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/selectel/pyte"
+    ],
+    "package_url": "https://pypi.org/project/pyte/0.8.2/",
+    "license": "GNU LGPL version 3; see licence text",
+    "notice_files": [
+      "licenses/pyte/LICENSE",
+      "licenses/pyte/AUTHORS-NOTICE.txt"
+    ]
+  },
+  {
+    "name": "wcwidth",
+    "version": "0.9.3",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/jquast/wcwidth"
+    ],
+    "package_url": "https://pypi.org/project/wcwidth/0.9.3/",
+    "license": "MIT",
+    "notice_files": [
+      "licenses/wcwidth/LICENSE"
+    ]
+  },
+  {
+    "name": "typing_extensions",
+    "version": "4.16.0",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/python/typing_extensions/issues",
+      "https://github.com/python/typing_extensions/blob/main/CHANGELOG.md",
+      "https://typing-extensions.readthedocs.io/",
+      "https://github.com/python/typing_extensions",
+      "https://github.com/python/typing/discussions",
+      "https://github.com/python/typing_extensions"
+    ],
+    "package_url": "https://pypi.org/project/typing_extensions/4.16.0/",
+    "license": "PSF-2.0",
+    "notice_files": [
+      "licenses/typing_extensions/LICENSE"
+    ]
+  },
+  {
+    "name": "CPython",
+    "version": "3.14.4",
+    "platforms": [
+      "macOS"
+    ],
+    "source_urls": [
+      "https://github.com/python/cpython/tree/v3.14.4"
+    ],
+    "notice_files": [
+      "licenses/python-macos/LICENSE.txt"
+    ],
+    "license": "PSF-2.0"
+  },
+  {
+    "name": "blessed",
+    "version": "1.52.0",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://blessed.readthedocs.io/en/latest/history.html",
+      "https://blessed.readthedocs.io",
+      "https://github.com/jquast/blessed",
+      "https://github.com/jquast/blessed/issues",
+      "https://github.com/jquast/blessed"
+    ],
+    "package_url": "https://pypi.org/project/blessed/1.52.0/",
+    "license": "MIT",
+    "notice_files": [
+      "licenses/blessed/LICENSE"
+    ]
+  },
+  {
+    "name": "jinxed",
+    "version": "2.1.0",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/Rockhopper-Technologies/jinxed"
+    ],
+    "package_url": "https://pypi.org/project/jinxed/2.1.0/",
+    "license": "MPLv2.0",
+    "notice_files": [
+      "licenses/jinxed/LICENSE",
+      "licenses/jinxed/LICENSE.ncurses"
+    ]
+  },
+  {
+    "name": "ansicon",
+    "version": "1.89.0",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/Rockhopper-Technologies/ansicon"
+    ],
+    "package_url": "https://pypi.org/project/ansicon/1.89.0/",
+    "license": "MPLv2.0",
+    "notice_files": [
+      "licenses/ansicon/LICENSE.txt"
+    ]
+  },
+  {
+    "name": "CPython",
+    "version": "3.14.8",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/python/cpython/tree/v3.14.8"
+    ],
+    "license": "PSF-2.0",
+    "notice_files": [
+      "licenses/python-windows/LICENSE.txt"
+    ]
+  },
+  {
+    "name": "PyInstaller bootloader and runtime hooks",
+    "version": "6.22.3",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/pyinstaller/pyinstaller/tree/v6.22.3"
+    ],
+    "license": "GPL-2.0-or-later WITH bootloader exception; Apache-2.0 runtime hooks",
+    "notice_files": [
+      "licenses/pyinstaller-bootloader/COPYING.txt"
+    ]
+  },
+  {
+    "name": "PySide6-Essentials",
+    "version": "6.12.0",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/pyside/pyside-setup/tree/v6.12.0"
+    ],
+    "package_url": "https://pypi.org/project/PySide6-Essentials/6.12.0/",
+    "license": null,
+    "notice_files": [
+      "licenses/pyside-shiboken/LGPL-3.0-only.txt",
+      "licenses/pyside-shiboken/GPL-3.0-only.txt",
+      "licenses/pyside-shiboken/GPL-2.0-only.txt"
+    ],
+    "licence_source_urls": [
+      "https://raw.githubusercontent.com/pyside/pyside-setup/v6.12.0/LICENSES/LGPL-3.0-only.txt",
+      "https://raw.githubusercontent.com/pyside/pyside-setup/v6.12.0/LICENSES/GPL-3.0-only.txt",
+      "https://raw.githubusercontent.com/pyside/pyside-setup/v6.12.0/LICENSES/GPL-2.0-only.txt"
+    ]
+  },
+  {
+    "name": "shiboken6",
+    "version": "6.12.0",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/pyside/pyside-setup/tree/v6.12.0"
+    ],
+    "package_url": "https://pypi.org/project/shiboken6/6.12.0/",
+    "license": null,
+    "notice_files": [
+      "licenses/pyside-shiboken/LGPL-3.0-only.txt",
+      "licenses/pyside-shiboken/GPL-3.0-only.txt",
+      "licenses/pyside-shiboken/GPL-2.0-only.txt"
+    ],
+    "licence_source_urls": [
+      "https://raw.githubusercontent.com/pyside/pyside-setup/v6.12.0/LICENSES/LGPL-3.0-only.txt",
+      "https://raw.githubusercontent.com/pyside/pyside-setup/v6.12.0/LICENSES/GPL-3.0-only.txt",
+      "https://raw.githubusercontent.com/pyside/pyside-setup/v6.12.0/LICENSES/GPL-2.0-only.txt"
+    ]
+  },
+  {
+    "name": "Qt runtime",
+    "version": "6.12.0",
+    "platforms": [
+      "macOS",
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/qt/qtbase/tree/v6.12.0",
+      "https://github.com/qt/qtimageformats/tree/v6.12.0"
+    ],
+    "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only; additional components as attributed",
+    "notice_files": [
+      "licenses/qt/LGPL-3.0-only.txt",
+      "licenses/qt/GPL-3.0-only.txt",
+      "licenses/qt/GPL-2.0-only.txt",
+      "qt-attributions.json"
+    ],
+    "licence_source_urls": [
+      "https://raw.githubusercontent.com/qt/qtbase/v6.12.0/LICENSES/LGPL-3.0-only.txt",
+      "https://raw.githubusercontent.com/qt/qtbase/v6.12.0/LICENSES/GPL-3.0-only.txt",
+      "https://raw.githubusercontent.com/qt/qtbase/v6.12.0/LICENSES/GPL-2.0-only.txt"
+    ]
+  },
+  {
+    "name": "OpenSSL",
+    "version": "3.6.2",
+    "platforms": [
+      "macOS"
+    ],
+    "source_urls": [
+      "https://github.com/openssl/openssl/tree/openssl-3.6.2"
+    ],
+    "license": "Apache-2.0",
+    "notice_files": [
+      "licenses/openssl@3/LICENSE.txt"
+    ]
+  },
+  {
+    "name": "mpdecimal",
+    "version": "4.0.1",
+    "platforms": [
+      "macOS"
+    ],
+    "source_urls": [
+      "https://www.bytereef.org/mpdecimal/index.html"
+    ],
+    "license": "BSD-2-Clause",
+    "notice_files": [
+      "licenses/mpdecimal/COPYRIGHT.txt"
+    ]
+  },
+  {
+    "name": "zstd",
+    "version": "1.5.7",
+    "platforms": [
+      "macOS"
+    ],
+    "source_urls": [
+      "https://github.com/facebook/zstd/tree/v1.5.7"
+    ],
+    "license": "BSD-3-Clause OR GPL-2.0-only",
+    "notice_files": [
+      "licenses/zstd/LICENSE",
+      "licenses/zstd/COPYING"
+    ]
+  },
+  {
+    "name": "liblzma (XZ Utils)",
+    "version": "5.8.3",
+    "platforms": [
+      "macOS"
+    ],
+    "source_urls": [
+      "https://github.com/tukaani-project/xz/tree/v5.8.3"
+    ],
+    "license": "0BSD",
+    "notice_files": [
+      "licenses/xz/COPYING",
+      "licenses/xz/COPYING.0BSD"
+    ]
+  },
+  {
+    "name": "OpenSSL",
+    "version": "3.5.9",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/openssl/openssl/tree/openssl-3.5.9"
+    ],
+    "license": "Apache-2.0",
+    "notice_files": [
+      "licenses/openssl-windows/LICENSE.txt"
+    ],
+    "licence_source_url": "https://raw.githubusercontent.com/openssl/openssl/openssl-3.5.9/LICENSE.txt",
+    "version_evidence": "https://github.com/python/cpython/blob/v3.14.8/PCbuild/get_externals.bat"
+  },
+  {
+    "name": "libffi",
+    "version": "3.4.4",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/libffi/libffi/tree/v3.4.4"
+    ],
+    "license": "MIT",
+    "notice_files": [
+      "licenses/libffi-windows/LICENSE.txt"
+    ],
+    "licence_source_url": "https://raw.githubusercontent.com/libffi/libffi/v3.4.4/LICENSE",
+    "version_evidence": "https://github.com/python/cpython/blob/v3.14.8/PCbuild/get_externals.bat"
+  },
+  {
+    "name": "bzip2",
+    "version": "1.0.8",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/python/cpython-source-deps/tree/bzip2-1.0.8"
+    ],
+    "license": "bzip2-1.0.6",
+    "notice_files": [
+      "licenses/bzip2-windows/LICENSE.txt"
+    ],
+    "licence_source_url": "https://raw.githubusercontent.com/python/cpython-source-deps/bzip2-1.0.8/LICENSE",
+    "version_evidence": "https://github.com/python/cpython/blob/v3.14.8/PCbuild/get_externals.bat"
+  },
+  {
+    "name": "liblzma (XZ Utils)",
+    "version": "5.2.5",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/tukaani-project/xz/tree/v5.2.5"
+    ],
+    "license": "Public domain (liblzma); see COPYING",
+    "notice_files": [
+      "licenses/xz-windows/LICENSE.txt"
+    ],
+    "licence_source_url": "https://raw.githubusercontent.com/tukaani-project/xz/v5.2.5/COPYING",
+    "version_evidence": "https://github.com/python/cpython/blob/v3.14.8/PCbuild/get_externals.bat"
+  },
+  {
+    "name": "zlib-ng",
+    "version": "2.2.4",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://github.com/zlib-ng/zlib-ng/tree/2.2.4"
+    ],
+    "license": "Zlib",
+    "notice_files": [
+      "licenses/zlib-ng-windows/LICENSE.txt"
+    ],
+    "licence_source_url": "https://raw.githubusercontent.com/zlib-ng/zlib-ng/2.2.4/LICENSE.md",
+    "version_evidence": "https://github.com/python/cpython/blob/v3.14.8/PCbuild/get_externals.bat"
+  },
+  {
+    "name": "SQLite",
+    "version": "3.53.0",
+    "platforms": [
+      "macOS"
+    ],
+    "source_urls": [
+      "https://www.sqlite.org/"
+    ],
+    "license": "Public domain",
+    "notice_files": [
+      "licenses/sqlite-macos/PUBLIC-DOMAIN-NOTICE.txt"
+    ]
+  },
+  {
+    "name": "SQLite",
+    "version": "3.50.4",
+    "platforms": [
+      "Windows"
+    ],
+    "source_urls": [
+      "https://www.sqlite.org/"
+    ],
+    "license": "Public domain",
+    "notice_files": [
+      "licenses/sqlite-windows/PUBLIC-DOMAIN-NOTICE.txt"
+    ]
+  }
+]

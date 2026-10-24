@@ -1,0 +1,494 @@
+[
+  {
+    "title": "Apache Tika MimeType Definitions, version c29724782854bb5a319f4a1940d0828a58ace3f9",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-tika-mimetypes.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-tika-mimetypes.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Apache-2.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "BLAKE2 (reference implementation), version ed1974ea83433eba7b2d95c5dcd9ac33cb847913",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-blake2.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-blake2.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Data Compression Library (zlib), version 1.3.2",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-zlib.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-zlib.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Zlib.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Easing Equations by Robert Penner",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-easing.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-easing.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Efficient Binary-Decimal and Decimal-Binary Conversion Routines for IEEE Doubles, version 3.4.0",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-doubleconversion.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-doubleconversion.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "MD4",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-md4.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-md4.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/CC0-1.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "MD5",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-md5.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-md5.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/CC0-1.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "PCRE2 - Stack-less Just-In-Time Compiler, version 10.48",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-pcre2-sljit.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-pcre2-sljit.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-2-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "PCRE2, version 10.48",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-pcre2.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-pcre2.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "QEventDispatcher on macOS",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-qeventdispatcher-cf.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-qeventdispatcher-cf.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Secure Hash Algorithm SHA-1",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-sha1.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-sha1.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Secure Hash Algorithm SHA-3 - Keccak, version 3.2",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-sha3-keccak.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-sha3-keccak.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/CC0-1.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Secure Hash Algorithm SHA-3 - brg_endian, version 1.0.0",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-sha3-endian.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-sha3-endian.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-2-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Secure Hash Algorithms SHA-384 and SHA-512",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-rfc6234.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-rfc6234.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "SipHash Algorithm",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-siphash.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-siphash.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/CC0-1.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "TinyCBOR, version 7.0",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-tinycbor.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-tinycbor.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Unicode Character Database (UCD), version 36",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-unicode-character-database.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-unicode-character-database.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Unicode-3.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Unicode Common Locale Data Repository (CLDR), version v48.2",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-unicode-cldr.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-unicode-cldr.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Unicode-3.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "forkfd",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-forkfd.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-forkfd.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "tl::expected, version 41d3e1f48d682992a2230b2a715bca38b848b269",
+    "module": "qt-core",
+    "source_url": "https://doc.qt.io/qt-6/qtcore-attribution-tlexpected.html",
+    "notice_file": "licenses/qt/attributions/qtcore-attribution-tlexpected.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/CC0-1.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "libdbus-1 headers, version 1.13.12",
+    "module": "qt-d-bus",
+    "source_url": "https://doc.qt.io/qt-6/qtdbus-attribution-libdbus-1-headers.html",
+    "notice_file": "licenses/qt/attributions/qtdbus-attribution-libdbus-1-headers.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Adobe Glyph List For New Fonts, version 1.7",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-aglfn.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-aglfn.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Anti-aliasing rasterizer from FreeType 2",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-grayraster.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-grayraster.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Cocoa Platform Plugin",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-cocoa-platform-plugin.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-cocoa-platform-plugin.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "D3D12 Memory Allocator, version v3.1.0",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-d3d12memoryallocator.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-d3d12memoryallocator.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "DejaVu Fonts, version 2.37",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-dejayvu.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-dejayvu.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Bitstream-Vera.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Emoji Segmenter, version 0.4.0",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-emoji-segmenter.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-emoji-segmenter.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Apache-2.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Freetype 2 - Bitmap Distribution Format (BDF) support",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-freetype-bdf.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-freetype-bdf.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Freetype 2 - Portable Compiled Format (PCF) support",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-freetype-pcf.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-freetype-pcf.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Freetype 2 - zlib",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-freetype-zlib.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-freetype-zlib.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Zlib.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Freetype 2, version 2.14.3",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-freetype.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-freetype.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "HarfBuzz-NG, version 14.5.0",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-harfbuzz-ng.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-harfbuzz-ng.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "LibJPEG-turbo, version 3.2.0",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-libjpeg.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-libjpeg.txt",
+    "licence_urls": [],
+    "notice_blocks": 3
+  },
+  {
+    "title": "LibPNG, version 1.6.58",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-libpng.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-libpng.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "MD4C, version 0.5.3",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-md4c.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-md4c.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Mipmap generator for D3D12, version 0aa79bad78992da0b6a8279ddb9002c1753cb849",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-rhi-miniengine-d3d12-mipmap.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-rhi-miniengine-d3d12-mipmap.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Native Style for Android",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-android-native-style.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-android-native-style.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/Apache-2.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "OpenGL ES 2 Headers, version Revision 27673",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-opengl-es2-headers.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-opengl-es2-headers.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "OpenGL Headers, version Revision 27684",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-opengl-headers.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-opengl-headers.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Pixman, version 0.17.12",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-pixman.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-pixman.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Smooth Scaling Algorithm",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-smooth-scaling-algorithm.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-smooth-scaling-algorithm.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Vulkan API Registry, version 1.4.308",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-vulkan-xml-spec.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-vulkan-xml-spec.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Vulkan Memory Allocator, version 3.3.0",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-vulkanmemoryallocator.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-vulkanmemoryallocator.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "WebGradients",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-webgradients.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-webgradients.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "Wintab API",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-wintab.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-wintab.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "X Server helper",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-xserverhelper.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-xserverhelper.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "XCB-XInput",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-xcb-xinput.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-xcb-xinput.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MIT.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "sRGB color profile icc file",
+    "module": "qt-gui",
+    "source_url": "https://doc.qt.io/qt-6/qtgui-attribution-icc-srgb-color-profile.html",
+    "notice_file": "licenses/qt/attributions/qtgui-attribution-icc-srgb-color-profile.txt",
+    "licence_urls": [],
+    "notice_blocks": 2
+  },
+  {
+    "title": "TIFF Software Distribution (libtiff), version 4.7.2",
+    "module": "qt-image-formats",
+    "source_url": "https://doc.qt.io/qt-6/qtimageformats-attribution-libtiff.html",
+    "notice_file": "licenses/qt/attributions/qtimageformats-attribution-libtiff.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/libtiff.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "WebP (libwebp), version 1.6.0",
+    "module": "qt-image-formats",
+    "source_url": "https://doc.qt.io/qt-6/qtimageformats-attribution-libwebp.html",
+    "notice_file": "licenses/qt/attributions/qtimageformats-attribution-libwebp.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "The Public Suffix List, version 2026-05-14_08-35-31_UTC",
+    "module": "qt-network",
+    "source_url": "https://doc.qt.io/qt-6/qtnetwork-attribution-psl-data.html",
+    "notice_file": "licenses/qt/attributions/qtnetwork-attribution-psl-data.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/MPL-2.0.html"
+    ],
+    "notice_blocks": 2
+  },
+  {
+    "title": "libpsl - C library to handle the Public Suffix List, version 664f3dc85259ec65e30248a61fa1c45b7b0e4c3f",
+    "module": "qt-network",
+    "source_url": "https://doc.qt.io/qt-6/qtnetwork-attribution-libpsl.html",
+    "notice_file": "licenses/qt/attributions/qtnetwork-attribution-libpsl.txt",
+    "licence_urls": [
+      "https://spdx.org/licenses/BSD-3-Clause.html"
+    ],
+    "notice_blocks": 2
+  }
+]

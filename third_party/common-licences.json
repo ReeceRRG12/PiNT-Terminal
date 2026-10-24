@@ -1,0 +1,52 @@
+[
+  {
+    "id": "Apache-2.0",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Apache-2.0.txt",
+    "notice_file": "licenses/common/Apache-2.0.txt"
+  },
+  {
+    "id": "BSD-2-Clause",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/BSD-2-Clause.txt",
+    "notice_file": "licenses/common/BSD-2-Clause.txt"
+  },
+  {
+    "id": "BSD-3-Clause",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/BSD-3-Clause.txt",
+    "notice_file": "licenses/common/BSD-3-Clause.txt"
+  },
+  {
+    "id": "Bitstream-Vera",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Bitstream-Vera.txt",
+    "notice_file": "licenses/common/Bitstream-Vera.txt"
+  },
+  {
+    "id": "CC0-1.0",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/CC0-1.0.txt",
+    "notice_file": "licenses/common/CC0-1.0.txt"
+  },
+  {
+    "id": "MIT",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/MIT.txt",
+    "notice_file": "licenses/common/MIT.txt"
+  },
+  {
+    "id": "MPL-2.0",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/MPL-2.0.txt",
+    "notice_file": "licenses/common/MPL-2.0.txt"
+  },
+  {
+    "id": "Unicode-3.0",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Unicode-3.0.txt",
+    "notice_file": "licenses/common/Unicode-3.0.txt"
+  },
+  {
+    "id": "Zlib",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/Zlib.txt",
+    "notice_file": "licenses/common/Zlib.txt"
+  },
+  {
+    "id": "libtiff",
+    "source_url": "https://raw.githubusercontent.com/spdx/license-list-data/main/text/libtiff.txt",
+    "notice_file": "licenses/common/libtiff.txt"
+  }
+]

@@ -1,0 +1,16 @@
+.venv/
+.venv-release/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pint
+*.sqlite*
+*.pintbundle
+build/
+dist/
+*.egg-info/
+.DS_Store
+artifacts/
+# Local working records and machine-specific recovery notes.
+docs/BRIEF.md
+docs/CHECKPOINT.md

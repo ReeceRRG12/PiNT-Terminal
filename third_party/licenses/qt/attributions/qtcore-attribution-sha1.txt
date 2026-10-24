@@ -1,0 +1,12 @@
+Secure Hash Algorithm SHA-1
+Qt 6.12.0 attribution source: https://doc.qt.io/qt-6/qtcore-attribution-sha1.html
+
+Source and licence links:
+http://www.dominik-reichl.de/projects/csha1/
+
+Copyright (C) Dominik Reichl <dominik.reichl@t-online.de>
+Copyright (C) 2016 The Qt Company Ltd
+
+100% free public domain implementation of the SHA-1 algorithm
+by Dominik Reichl <dominik.reichl@t-online.de>
+Web: http://www.dominik-reichl.de/
