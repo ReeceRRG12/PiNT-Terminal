@@ -100,7 +100,7 @@ python -m pip install -e '.[build]'
 python -m PyInstaller --noconfirm --clean --distpath dist/0.1.1-beta.1 "PiNT Terminal.spec"
 ```
 
-Tests use temporary workspaces and local loopback servers, with no production-device access. Qt tests run offscreen. Build on each target operating system; PyInstaller is not a cross-compiler. Build from the saved specification to retain the app identifier and version metadata. The macOS development bundle is not a notarised distribution release. GitHub workflows are included for both target platforms but have not been dispatched in this project.
+Tests use temporary workspaces and local loopback servers, with no production-device access. Qt tests run offscreen. Build on each target operating system; PyInstaller is not a cross-compiler. Build from the saved specification to retain the app identifier and version metadata. The macOS development bundle is not a notarised distribution release. [GitHub verification passed on macOS and Windows with Python 3.12](https://github.com/ReeceRRG12/PiNT-Terminal/actions/runs/40095170700) for the initial beta source.
 
 `requirements-verified-macos.txt` and `requirements-verified-windows.txt` record the installed test environments, including optional packages; they are evidence, not cross-platform lockfiles. `pyproject.toml` defines the application dependencies. The runtime uses Qt Essentials and does not require a browser engine.
 

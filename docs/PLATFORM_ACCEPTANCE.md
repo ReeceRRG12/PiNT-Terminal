@@ -1,5 +1,7 @@
 # Platform acceptance
 
+Beta publication verification on 24 October 2026: [GitHub CI passed on macOS and Windows with Python 3.12](https://github.com/ReeceRRG12/PiNT-Terminal/actions/runs/40095170700) for commit `8a8e196`. The historical evidence below describes earlier local checks.
+
 Initial 0.1.0 evidence on 24 October 2026: final local suites pass on both tested environments. macOS 26.5.1 Apple Silicon with Python 3.14.4: **70 passed, 7 subtests passed** in 11.92 seconds. Windows 11 ARM64 (10.0.22621.4317) with x64 Python 3.14.8 under emulation: **69 passed, 1 skipped, 7 subtests passed** in 36.00 seconds. The skip is a symlink fixture requiring unavailable Windows privileges. This does not establish native Windows ARM64 or conventional x64 hardware acceptance. GitHub workflows target Python 3.12 but have not been dispatched.
 
 Protocol evidence: `tests/test_transport.py`, `tests/test_transfers.py` and `tests/test_tftp.py` pass on both platforms, subject to the Windows symlink skip. These cover stalled SFTP timeout/cancellation, preserved download destinations and FTP cancellation using loopback servers. Windows testing found and corrected archive flushing on a read-only handle and SFTP temporary-file cleanup. Qt event tests also cover Windows AltGr text and macOS Ctrl/Option behaviour.
