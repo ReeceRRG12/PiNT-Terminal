@@ -1,6 +1,6 @@
 # Third-party notices
 
-PiNT Terminal 0.1.1 Early Access Beta includes the following runtime software.
+PiNT Terminal 0.2.0 includes the following runtime software.
 The upstream copyright and licence texts are in `licenses/`.
 
 - CPython: 3.14.4 on macOS and 3.14.8 on Windows.

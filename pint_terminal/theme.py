@@ -40,6 +40,7 @@ def apply_theme(app):
     QPushButton#primary { background: #62D6C7; color: #101722; border: 0; font-weight: 700; }
     QPushButton#primary:hover { background: #80E2D5; }
     QPushButton#danger { color: #FF9C9C; }
+    QPushButton#danger:disabled { color: #687A8D; }
     QPushButton#nav { text-align: left; border: 0; background: transparent; padding: 12px 14px; }
     QPushButton#nav:checked { color: #62D6C7; background: #233D46; }
     QPushButton#nav:hover { background: #192F3D; }
@@ -51,6 +52,10 @@ def apply_theme(app):
     QTableWidget { background: #101722; alternate-background-color: #15202E; border: 0;
                    gridline-color: #2A3B4E; selection-background-color: #233D46; }
     QTableWidget::item { padding: 8px; border-bottom: 1px solid #233344; }
+    QTreeWidget { background: #101722; border: 0; selection-background-color: #233D46; }
+    QTreeWidget::item { padding: 13px 8px; border-bottom: 1px solid #233344; }
+    QTreeWidget::item:selected { background: #233D46; color: #62D6C7; }
+    QTreeWidget::item:hover { background: #192F3D; }
     QHeaderView::section { background: #131D2A; color: #A7B6C8; border: 0;
                            border-bottom: 1px solid #2A3B4E; padding: 12px 8px; font-size: 11px; }
     QTabWidget::pane { border: 1px solid #2A3B4E; border-radius: 4px; }

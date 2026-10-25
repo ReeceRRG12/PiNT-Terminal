@@ -1,6 +1,7 @@
 """Integration checks for Qt forms, the encrypted workspace and live transport."""
 
 import asyncio
+from dataclasses import replace
 import os
 from pathlib import Path
 import threading
@@ -13,8 +14,9 @@ import telnetlib3
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
 
-from pint_terminal.app import HostDialog, MainWindow, SessionPane
-from pint_terminal.models import Host
+from pint_terminal.app import GroupDialog, HostDialog, MainWindow, SessionPane
+from pint_terminal.transport import SessionWorker
+from pint_terminal.models import Group, Host
 from pint_terminal.recordings import RecordStore
 from pint_terminal.vault import Workspace
 
@@ -86,25 +88,296 @@ def test_host_dialog_validates_and_preserves_id_on_edit(qt_app, notices):
     edited.deleteLater()
 
 
+def group_item(window, name):
+    return next(window.host_tree.topLevelItem(index)
+                for index in range(window.host_tree.topLevelItemCount())
+                if window.host_tree.topLevelItem(index).data(0, Qt.UserRole) == name)
+
+
+def device_item(window, host):
+    group = group_item(window, host.group)
+    return next(group.child(index) for index in range(group.childCount())
+                if group.child(index).data(0, Qt.UserRole) == host.id)
+
+
 def test_main_window_filters_selects_and_saves(window, ui_workspace):
     assert window.pages.count() == 5
-    assert window.host_table.rowCount() == 3
+    assert window.host_tree.topLevelItemCount() == 2
+    assert group_item(window, "Lab").childCount() == 2
+    assert group_item(window, "Office").childCount() == 1
     assert window.transfer_hosts.count() == 2
+    window.host_tree.setCurrentItem(group_item(window, "Lab"))
+    assert window.selected_group().name == "Lab"
+    assert window.selected_host() is None
+    assert not window.connect_button.isEnabled()
     window.search.setText("UPLINK")
-    assert window.host_table.rowCount() == 1
+    assert window.host_tree.topLevelItemCount() == 1
+    assert group_item(window, "Lab").childCount() == 1
+    window.host_tree.setCurrentItem(device_item(window, ui_workspace.hosts[0]))
     assert window.selected_host().name == "Core switch"
     assert window.detail_title.text() == "Core switch"
-    window.search.clear()
-    window.groups.setCurrentText("Office")
-    assert window.host_table.rowCount() == 1
+    window.search.setText("office")
+    assert window.host_tree.topLevelItemCount() == 1
+    assert group_item(window, "Office").childCount() == 1
+    window.host_tree.setCurrentItem(device_item(window, ui_workspace.hosts[1]))
     assert window.selected_host().name == "Archive"
     window.search.setText("missing")
-    assert window.host_table.rowCount() == 0
+    assert window.host_tree.topLevelItemCount() == 0
     assert not window.connect_button.isEnabled()
     ui_workspace.hosts[0].name = "Updated core switch"
     window.save_workspace()
     restored = Workspace.open(ui_workspace.path, "integration passphrase")
     assert restored.hosts[0].name == "Updated core switch"
+
+
+def test_empty_groups_remain_visible_and_group_search_includes_children(window, ui_workspace):
+    ui_workspace.groups.append(Group(name="Empty lab"))
+    window.refresh_hosts()
+    assert group_item(window, "Empty lab").childCount() == 0
+    window.host_tree.setCurrentItem(group_item(window, "Empty lab"))
+    assert window.selected_group().name == "Empty lab"
+    assert window.selected_host() is None
+    window.search.setText("Lab")
+    assert window.host_tree.topLevelItemCount() == 2
+    assert group_item(window, "Lab").childCount() == 2
+    assert group_item(window, "Empty lab").childCount() == 0
+    window.search.setText("192.0.2.2")
+    assert window.host_tree.topLevelItemCount() == 1
+    assert group_item(window, "Office").childCount() == 1
+
+
+def test_device_dialog_defaults_to_group_credentials_and_allows_custom_override(qt_app, notices):
+    groups = [Group(name="Lab", username="group-user", password="group-secret", key_path="group-key")]
+    dialog = HostDialog(groups=groups, selected_group="Lab")
+    dialog.name.setText("New switch")
+    dialog.address.setText("192.0.2.8")
+    assert dialog.group.currentText() == "Lab"
+    assert dialog.credential_source.currentText() == "Use group credentials"
+    assert not dialog.username.isEnabled()
+    assert not dialog.password.isEnabled()
+    assert not dialog.key.isEnabled()
+    dialog.save()
+    assert dialog.result() == QDialog.Accepted
+    assert dialog.result_host.inherit_credentials
+    assert dialog.result_host.group == "Lab"
+    assert dialog.result_host.password != "group-secret"
+    dialog.deleteLater()
+
+    custom = HostDialog(host=Host(name="Custom switch", address="192.0.2.9", group="Lab",
+                                  username="own-user", password=" own secret "), groups=groups)
+    assert custom.credential_source.currentText() == "Custom credentials"
+    assert custom.username.isEnabled()
+    assert custom.password.text() == " own secret "
+    custom.credential_source.setCurrentText("Use group credentials")
+    assert not custom.username.isEnabled()
+    custom.credential_source.setCurrentText("Custom credentials")
+    assert custom.username.isEnabled()
+    assert custom.password.text() == " own secret "
+    custom.password.setText("")
+    custom.save()
+    assert not custom.result_host.inherit_credentials
+    assert custom.result_host.username == "own-user"
+    assert custom.result_host.password == ""
+    custom.deleteLater()
+
+
+def test_group_dialog_preserves_password_spaces_and_rejects_duplicate_names(qt_app, notices):
+    groups = [Group(name="Lab")]
+    dialog = GroupDialog(groups=groups)
+    dialog.name.setText("Lab")
+    dialog.save()
+    assert dialog.result() != QDialog.Accepted
+    assert notices
+    dialog.name.setText(" Office ")
+    dialog.username.setText(" operator ")
+    dialog.password.setText(" keep secret spaces ")
+    dialog.save()
+    assert dialog.result() == QDialog.Accepted
+    assert dialog.result_group.name == "Office"
+    assert dialog.result_group.username == "operator"
+    assert dialog.result_group.password == " keep secret spaces "
+    dialog.deleteLater()
+
+
+def test_group_create_rename_and_empty_delete_persist_without_changing_custom_devices(window, ui_workspace, monkeypatch):
+    def create_group(dialog):
+        dialog.name.setText("Bench")
+        dialog.username.setText("bench-user")
+        dialog.password.setText("bench-secret")
+        dialog.save()
+        return dialog.result()
+    monkeypatch.setattr(GroupDialog, "exec", create_group)
+    window.new_group()
+    assert group_item(window, "Bench").childCount() == 0
+    restored = Workspace.open(ui_workspace.path, "integration passphrase")
+    assert next(group for group in restored.groups if group.name == "Bench").password == "bench-secret"
+
+    window.host_tree.setCurrentItem(group_item(window, "Lab"))
+    before = [(host.id, host.username, host.password, host.inherit_credentials) for host in ui_workspace.hosts]
+    def rename_group(dialog):
+        dialog.name.setText("Network lab")
+        dialog.username.setText("new-group-user")
+        dialog.password.setText("new-group-secret")
+        dialog.save()
+        return dialog.result()
+    monkeypatch.setattr(GroupDialog, "exec", rename_group)
+    window.edit_group()
+    assert group_item(window, "Network lab").childCount() == 2
+    assert ui_workspace.hosts[0].group == ui_workspace.hosts[2].group == "Network lab"
+    assert [(host.id, host.username, host.password, host.inherit_credentials) for host in ui_workspace.hosts] == before
+    restored = Workspace.open(ui_workspace.path, "integration passphrase")
+    assert restored.hosts[0].group == "Network lab"
+
+    window.host_tree.setCurrentItem(group_item(window, "Network lab"))
+    window.delete_group()
+    assert any(group.name == "Network lab" for group in ui_workspace.groups)
+    window.host_tree.setCurrentItem(group_item(window, "Bench"))
+    window.delete_group()
+    assert all(group.name != "Bench" for group in ui_workspace.groups)
+    restored = Workspace.open(ui_workspace.path, "integration passphrase")
+    assert all(group.name != "Bench" for group in restored.groups)
+
+
+def test_new_device_uses_selected_group_and_moving_it_updates_inherited_credentials(window, ui_workspace, monkeypatch):
+    lab = next(group for group in ui_workspace.groups if group.name == "Lab")
+    office = next(group for group in ui_workspace.groups if group.name == "Office")
+    lab.username, lab.password = "lab-user", "lab-secret"
+    office.username, office.password = "office-user", "office-secret"
+    window.host_tree.setCurrentItem(group_item(window, "Lab"))
+    def add_device(dialog):
+        assert dialog.group.currentText() == "Lab"
+        assert dialog.credential_source.currentText() == "Use group credentials"
+        dialog.name.setText("Added device")
+        dialog.address.setText("192.0.2.25")
+        dialog.save()
+        return dialog.result()
+    monkeypatch.setattr(HostDialog, "exec", add_device)
+    window.new_host()
+    added = window.selected_host()
+    assert added.name == "Added device"
+    assert added.group == "Lab" and added.inherit_credentials
+    assert ui_workspace.resolve_host(added).password == "lab-secret"
+    def move_device(dialog):
+        dialog.group.setCurrentText("Office")
+        dialog.save()
+        return dialog.result()
+    monkeypatch.setattr(HostDialog, "exec", move_device)
+    window.edit_host()
+    moved = window.selected_host()
+    assert moved.id == added.id
+    assert moved.group == "Office" and moved.inherit_credentials
+    assert ui_workspace.resolve_host(moved).password == "office-secret"
+    assert device_item(window, moved).parent().data(0, Qt.UserRole) == "Office"
+    restored = Workspace.open(ui_workspace.path, "integration passphrase")
+    saved = next(host for host in restored.hosts if host.id == added.id)
+    assert saved.group == "Office" and saved.inherit_credentials
+    assert restored.resolve_host(saved).password == "office-secret"
+
+
+def test_failed_group_rename_restores_devices_and_saved_credentials(window, ui_workspace, monkeypatch, notices):
+    window.host_tree.setCurrentItem(group_item(window, "Lab"))
+    saved_bytes = ui_workspace.path.read_bytes()
+    original_hosts = [host.to_dict() for host in ui_workspace.hosts]
+    original_groups = [group.to_dict() for group in ui_workspace.groups]
+    def rename_group(dialog):
+        dialog.name.setText("Unsaved lab")
+        dialog.password.setText("unsaved secret")
+        dialog.save()
+        return dialog.result()
+    def fail_save():
+        raise OSError("simulated disk failure")
+    monkeypatch.setattr(GroupDialog, "exec", rename_group)
+    with monkeypatch.context() as scoped:
+        scoped.setattr(ui_workspace, "save", fail_save)
+        window.edit_group()
+    assert [host.to_dict() for host in ui_workspace.hosts] == original_hosts
+    assert [group.to_dict() for group in ui_workspace.groups] == original_groups
+    assert ui_workspace.path.read_bytes() == saved_bytes
+    assert notices and "simulated disk failure" in notices[-1][1]
+
+
+def test_details_identify_credential_source_without_showing_password(window, ui_workspace):
+    group = next(group for group in ui_workspace.groups if group.name == "Lab")
+    group.username, group.password = "group-user", "never-display-this-secret"
+    host = ui_workspace.hosts[0]
+    host.inherit_credentials = True
+    window.refresh_hosts()
+    window.host_tree.setCurrentItem(device_item(window, host))
+    assert "group-user" in window.detail_body.text()
+    assert "group" in window.detail_body.text().casefold()
+    assert "never-display-this-secret" not in window.detail_body.text()
+    host.inherit_credentials = False
+    host.username = "custom-user"
+    window.update_details()
+    assert "custom-user" in window.detail_body.text()
+    assert "custom" in window.detail_body.text().casefold()
+    assert "private-password" not in window.detail_body.text()
+
+
+def test_terminal_credentials_are_snapshotted_per_tab_without_mutating_profile(window, ui_workspace, monkeypatch):
+    group = next(group for group in ui_workspace.groups if group.name == "Lab")
+    group.username, group.password, group.key_path = "group-user", "group-secret", "group-key"
+    host = ui_workspace.hosts[0]
+    host.inherit_credentials = True
+    original = host.to_dict()
+    monkeypatch.setattr(SessionWorker, "start", lambda _self: None)
+    def open_pane(profile):
+        pane = SessionPane(window, profile)
+        window.sessions.append(pane)
+        window.session_tabs.addTab(pane, profile.name)
+        return pane
+    pane = open_pane(host)
+    first = pane.worker.host
+    assert (first.username, first.password, first.key_path) == ("group-user", "group-secret", "group-key")
+    assert host.to_dict() == original
+    group.password = "rotated-secret"
+    pane.reconnect()
+    assert pane.worker.host.password == "group-secret"
+    assert open_pane(host).worker.host.password == "rotated-secret"
+    assert host.password == "private-password"
+    custom = replace(host, inherit_credentials=False, username="custom-user", password="")
+    ui_workspace.hosts[0] = custom
+    assert open_pane(custom).worker.host.password == ""
+    ui_workspace.hosts = [saved for saved in ui_workspace.hosts if saved.group != "Lab"]
+    ui_workspace.groups.remove(group)
+    pane.reconnect()
+    assert pane.worker.host.username == "group-user"
+    assert pane.worker.host.password == "group-secret"
+    assert pane.worker.host.address == host.address
+
+
+@pytest.mark.asyncio
+async def test_file_operations_use_group_defaults_and_device_overrides(window, ui_workspace, qt_app, monkeypatch):
+    group = next(group for group in ui_workspace.groups if group.name == "Office")
+    group.username, group.password, group.key_path = "file-user", "file-secret", "file-key"
+    host = ui_workspace.hosts[1]
+    host.inherit_credentials = True
+    window.transfer_hosts.setCurrentIndex(window.transfer_hosts.findData(host.id))
+    received = []
+    completed = []
+    class LocalClient:
+        def __init__(self, effective_host, _known_hosts_path):
+            self.host = effective_host
+            received.append(effective_host)
+        def __enter__(self):
+            return self
+        def __exit__(self, *_):
+            return False
+    monkeypatch.setattr("pint_terminal.app.TransferClient", LocalClient)
+    window.run_transfer(lambda client, _progress: client.host.username, completed.append, "Checking credentials")
+    await pump_until(qt_app, lambda: bool(completed) and not window.jobs)
+    assert completed == ["file-user"]
+    assert (received[0].password, received[0].key_path) == ("file-secret", "file-key")
+    assert host.password == ""
+    group.password = "changed-secret"
+    assert received[0].password == "file-secret"
+    host.inherit_credentials = False
+    host.username = "custom-file-user"
+    host.password = ""
+    window.run_transfer(lambda client, _progress: client.host.username, completed.append, "Checking override")
+    await pump_until(qt_app, lambda: len(completed) == 2 and not window.jobs)
+    assert completed[-1] == "custom-file-user"
+    assert received[-1].password == received[-1].key_path == ""
 
 
 def test_recordings_page_paginates_persistent_output(window, ui_workspace, qt_app):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import os
 from pathlib import Path
 from datetime import datetime
@@ -10,7 +11,7 @@ import queue
 import sys
 import tempfile
 
-from PySide6.QtCore import Qt, QThread, Signal, QTimer, QSettings
+from PySide6.QtCore import Qt, QThread, Signal, QTimer, QSettings, QSize
 from PySide6.QtGui import QFont, QCloseEvent, QAction, QKeySequence
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QFrame, QLabel, QPushButton, QLineEdit,
@@ -18,10 +19,12 @@ from PySide6.QtWidgets import (
     QMessageBox, QInputDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
     QStackedWidget, QTabWidget, QTableWidget, QTableWidgetItem, QHeaderView,
     QAbstractItemView, QSplitter, QPlainTextEdit, QProgressBar, QScrollArea, QLayout,
+    QTreeWidget, QTreeWidgetItem,
 )
 
 from . import __version__
-from .models import Host
+from .models import Group, Host
+from .dialogs import GroupDialog, HostDialog
 from .vault import Workspace
 from .recordings import RecordStore
 from .transcript import TranscriptRenderer
@@ -116,7 +119,7 @@ class Welcome(QDialog):
         self.recent = QSettings().value("last_workspace", "")
         if self.recent and Path(self.recent).is_file():
             layout.addWidget(button(f"Unlock {Path(self.recent).stem}", lambda: self.open(self.recent)))
-        note = label(f"Keep your passphrase safe. There is no account recovery.\nPiNT Terminal {__version__} • Early Access Beta", "muted")
+        note = label(f"Keep your passphrase safe. There is no account recovery.\nPiNT Terminal {__version__}", "muted")
         note.setWordWrap(True)
         layout.addSpacing(8)
         layout.addWidget(note)
@@ -164,76 +167,6 @@ class Welcome(QDialog):
             QMessageBox.warning(self, "Cannot import workspace", str(exc))
 
 
-class HostDialog(QDialog):
-    def __init__(self, parent=None, host=None):
-        super().__init__(parent)
-        self.host = host
-        self.result_host = None
-        self.setWindowTitle("Edit connection" if host else "New connection")
-        self.setMinimumWidth(480)
-        layout = QVBoxLayout(self)
-        layout.setSpacing(14)
-        layout.addWidget(label(self.windowTitle(), "section"))
-        form = QFormLayout()
-        self.name = QLineEdit(host.name if host else "")
-        self.address = QLineEdit(host.address if host else "")
-        self.address.setPlaceholderText("Hostname or IP address")
-        self.protocol = QComboBox()
-        self.protocol.addItems(["SSH", "Telnet", "SFTP", "FTP"])
-        self.port = QSpinBox()
-        self.port.setRange(1, 65535)
-        self.protocol.currentTextChanged.connect(lambda p: self.port.setValue({"SSH": 22, "Telnet": 23, "SFTP": 22, "FTP": 21}[p]))
-        self.protocol.setCurrentText(host.protocol.upper() if host and host.protocol != "telnet" else "Telnet" if host else "SSH")
-        self.port.setValue(host.port if host else 22)
-        self.username = QLineEdit(host.username if host else "")
-        self.password = QLineEdit(host.password if host else "")
-        self.password.setEchoMode(QLineEdit.Password)
-        self.password.setPlaceholderText("Optional: saved inside the encrypted workspace")
-        self.key = QLineEdit(host.key_path if host else "")
-        key_row = QWidget()
-        key_layout = QHBoxLayout(key_row)
-        key_layout.setContentsMargins(0, 0, 0, 0)
-        key_layout.addWidget(self.key)
-        key_layout.addWidget(button("Browse", self.choose_key))
-        self.group = QLineEdit(host.group if host else "Ungrouped")
-        self.tags = QLineEdit(host.tags if host else "")
-        self.reconnect = QCheckBox("Reconnect after an interrupted connection")
-        self.reconnect.setChecked(host.auto_reconnect if host else True)
-        for title, field in [("Name", self.name), ("Address", self.address), ("Protocol", self.protocol),
-                             ("Port", self.port), ("Username", self.username), ("Password", self.password),
-                             ("SSH key file", key_row), ("Group", self.group), ("Tags", self.tags)]:
-            form.addRow(title, field)
-        layout.addLayout(form)
-        layout.addWidget(self.reconnect)
-        note = label("Telnet login is interactive. Telnet and FTP use unencrypted network connections.\nSSH key files stay on this device and are not included in workspace exports.", "muted")
-        note.setWordWrap(True)
-        layout.addWidget(note)
-        buttons = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.save)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
-
-    def choose_key(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Select SSH private key")
-        if path:
-            self.key.setText(path)
-
-    def save(self):
-        try:
-            values = dict(name=self.name.text().strip() or self.address.text().strip(),
-                          address=self.address.text().strip(), protocol=self.protocol.currentText().lower(),
-                          port=self.port.value(), username=self.username.text().strip(), password=self.password.text(),
-                          key_path=self.key.text().strip(), group=self.group.text().strip() or "Ungrouped",
-                          tags=self.tags.text().strip(), auto_reconnect=self.reconnect.isChecked())
-            if self.host:
-                values["id"] = self.host.id
-            self.result_host = Host(**values)
-            self.result_host.validate()
-            self.accept()
-        except ValueError as exc:
-            QMessageBox.warning(self, "Connection details", str(exc))
-
-
 class Job(QThread):
     completed = Signal(object)
     failed = Signal(object)
@@ -255,7 +188,7 @@ class SessionPane(QWidget):
 
     def __init__(self, main, host, demo=False):
         super().__init__()
-        self.main, self.host = main, host
+        self.main, self.host = main, main.workspace.resolve_host(host)
         self.session_id = main.store.start_session(host)
         self.worker = None
         self.closed_record = False
@@ -466,7 +399,7 @@ class MainWindow(QMainWindow):
         side.addSpacing(30)
         side.addWidget(label("WORKSPACE", "muted"))
         self.nav = []
-        for index, title in enumerate(["Hosts", "Terminal sessions", "Recordings", "File transfer", "TFTP host"]):
+        for index, title in enumerate(["Vault", "Terminal sessions", "Recordings", "File transfer", "TFTP host"]):
             nav = button(title, lambda checked=False, i=index: self.show_page(i))
             nav.setObjectName("nav")
             nav.setCheckable(True)
@@ -480,7 +413,7 @@ class MainWindow(QMainWindow):
         side.addWidget(button("Export workspace", self.export_workspace))
         side.addWidget(button("Lock && close", self.close))
         side.addSpacing(8)
-        side.addWidget(label(f"{__version__}\nEarly Access Beta", "muted"))
+        side.addWidget(label(f"Version {__version__}", "muted"))
         shell.addWidget(sidebar)
         self.pages = QStackedWidget()
         shell.addWidget(self.pages, 1)
@@ -492,7 +425,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Workspace unlocked • Changes save automatically" + (" • Demo data only" if demo else ""))
         self.refresh_hosts()
         self.show_page(0)
-        new_action = QAction("New connection", self)
+        new_action = QAction("New device", self)
         new_action.setShortcut(QKeySequence.New if sys.platform == "darwin" else QKeySequence("Ctrl+Shift+N"))
         new_action.triggered.connect(self.new_host)
         self.addAction(new_action)
@@ -517,142 +450,302 @@ class MainWindow(QMainWindow):
             self.refresh_records()
 
     def make_hosts_page(self):
-        layout = self.page("CONNECTION LIBRARY", "Your network, within reach.", "Save a connection once. Keep its history every time.")
+        layout = self.page("ENCRYPTED VAULT", "Groups, then devices.", "Organise your devices by site or project. Set shared credentials once per group.")
         bar = QHBoxLayout()
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Search hosts, addresses, groups or tags…")
+        self.search.setPlaceholderText("Search groups, devices, addresses or tags…")
+        self.search.setAccessibleName("Search vault")
         self.search.textChanged.connect(self.filter_hosts)
-        self.groups = QComboBox()
-        self.groups.setMinimumWidth(160)
-        self.groups.currentTextChanged.connect(self.filter_hosts)
         bar.addWidget(self.search, 1)
-        bar.addWidget(self.groups)
-        bar.addWidget(button("+ New connection", self.new_host, True))
+        bar.addWidget(button("+ New group", self.new_group))
+        bar.addWidget(button("+ New device", self.new_host, True))
         layout.addLayout(bar)
         self.host_count = label("", "muted")
         layout.addWidget(self.host_count)
         split = QSplitter()
-        self.host_table = table(["HOST", "ADDRESS", "PROTOCOL", "GROUP"])
-        self.host_table.itemSelectionChanged.connect(self.update_details)
-        self.host_table.itemDoubleClicked.connect(lambda _: self.connect_selected())
-        split.addWidget(self.host_table)
+        self.host_tree = QTreeWidget()
+        self.host_tree.setHeaderLabels(["GROUP / DEVICE", "ADDRESS", "PROTOCOL"])
+        self.host_tree.setAccessibleName("Vault groups and devices")
+        self.host_tree.setRootIsDecorated(True)
+        self.host_tree.setIndentation(22)
+        self.host_tree.setUniformRowHeights(True)
+        self.host_tree.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.host_tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.host_tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.host_tree.header().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.host_tree.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.host_tree.itemSelectionChanged.connect(self.update_details)
+        self.host_tree.itemDoubleClicked.connect(lambda item, _: self.connect_selected() if item.parent() else None)
+        self._group_expansion = {}
+        split.addWidget(self.host_tree)
         details = QFrame()
         details.setObjectName("panel")
         details.setMinimumWidth(270)
         details.setMaximumWidth(340)
         detail_layout = QVBoxLayout(details)
         detail_layout.setContentsMargins(22, 22, 22, 22)
-        detail_layout.setSpacing(18)
+        detail_layout.setSpacing(14)
         detail_scroll = QScrollArea()
         detail_scroll.setWidgetResizable(True)
         detail_scroll.setFrameShape(QFrame.NoFrame)
         detail_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         detail_scroll.setFocusPolicy(Qt.StrongFocus)
-        detail_scroll.setAccessibleName("Connection details")
+        detail_scroll.setAccessibleName("Vault selection details")
         detail_scroll.setStyleSheet("QScrollArea { background: transparent; border: 0; }")
         detail_scroll.viewport().setAutoFillBackground(False)
         detail_content = QWidget()
         content_layout = QVBoxLayout(detail_content)
         content_layout.setContentsMargins(0, 0, 6, 0)
         content_layout.setSpacing(18)
-        # Preserve wrapped label heights, allowing the viewport to scroll instead
-        # of clipping metadata when Windows scaling reduces the available space.
         content_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        content_layout.addWidget(label("CONNECTION DETAILS", "eyebrow"))
-        self.detail_title = label("Ready when you are", "section")
+        self.detail_kind = label("GROUP DETAILS", "eyebrow")
+        content_layout.addWidget(self.detail_kind)
+        self.detail_title = label("Create your first group", "section")
+        self.detail_title.setTextFormat(Qt.PlainText)
         self.detail_title.setWordWrap(True)
         content_layout.addWidget(self.detail_title)
-        self.detail_body = label("Add your first host to get started.\n\nProfiles and credentials are saved in your encrypted workspace.", "muted")
+        self.detail_body = label("", "muted")
+        self.detail_body.setTextFormat(Qt.PlainText)
         self.detail_body.setWordWrap(True)
         self.detail_body.setTextInteractionFlags(Qt.TextSelectableByMouse)
         content_layout.addWidget(self.detail_body)
         content_layout.addStretch()
-        note = label("SESSION HISTORY\nTerminal output is recorded automatically and remains available after you disconnect.", "muted")
-        note.setWordWrap(True)
-        content_layout.addWidget(note)
         detail_scroll.setWidget(detail_content)
         detail_content.setAutoFillBackground(False)
         detail_layout.addWidget(detail_scroll, 1)
         self.connect_button = button("Connect", self.connect_selected, True)
-        self.edit_button = button("Edit connection", self.edit_host)
-        self.delete_button = button("Delete connection", self.delete_host)
+        self.add_device_button = button("+ Add device to group", self.new_host, True)
+        self.edit_button = button("Edit group", self.edit_selection)
+        self.delete_button = button("Delete group", self.delete_selection)
         self.delete_button.setObjectName("danger")
-        for control in [self.connect_button, self.edit_button, self.delete_button]:
+        for control in [self.connect_button, self.add_device_button, self.edit_button, self.delete_button]:
             detail_layout.addWidget(control)
         split.addWidget(details)
         split.setSizes([750, 300])
         layout.addWidget(split, 1)
 
     def selected_host(self):
-        host_id = selected_data(self.host_table)
-        return next((h for h in self.workspace.hosts if h.id == host_id), None)
+        item = self.host_tree.currentItem()
+        if not item or item.data(0, Qt.UserRole + 1) != "host":
+            return None
+        return next((h for h in self.workspace.hosts if h.id == item.data(0, Qt.UserRole)), None)
+
+    def selected_group(self):
+        item = self.host_tree.currentItem()
+        if not item:
+            return None
+        group_item = item.parent() or item
+        return self.workspace.find_group(group_item.data(0, Qt.UserRole))
+
+    def select_vault_item(self, value, kind):
+        for index in range(self.host_tree.topLevelItemCount()):
+            group = self.host_tree.topLevelItem(index)
+            items = [group] if kind == "group" else [group.child(i) for i in range(group.childCount())]
+            for item in items:
+                if item.data(0, Qt.UserRole) == value:
+                    if item.parent():
+                        item.parent().setExpanded(True)
+                    self.host_tree.setCurrentItem(item)
+                    self.host_tree.scrollToItem(item)
+                    return
 
     def refresh_hosts(self):
-        current_group = self.groups.currentText()
-        self.groups.blockSignals(True)
-        self.groups.clear()
-        self.groups.addItems(["All groups"] + sorted({h.group for h in self.workspace.hosts}))
-        if self.groups.findText(current_group) >= 0:
-            self.groups.setCurrentText(current_group)
-        self.groups.blockSignals(False)
         self.filter_hosts()
         current_id = self.transfer_hosts.currentData()
         self.transfer_hosts.clear()
-        for host in self.workspace.hosts:
+        for host in sorted(self.workspace.hosts, key=lambda h: (h.group.casefold(), h.name.casefold())):
             if host.protocol in ("ssh", "sftp", "ftp"):
-                self.transfer_hosts.addItem(f"{host.name}  /  {'FTP' if host.protocol == 'ftp' else 'SFTP'}", host.id)
+                self.transfer_hosts.addItem(f"{host.group} / {host.name}  /  {'FTP' if host.protocol == 'ftp' else 'SFTP'}", host.id)
         if self.transfer_hosts.findData(current_id) >= 0:
             self.transfer_hosts.setCurrentIndex(self.transfer_hosts.findData(current_id))
 
     def filter_hosts(self, *_):
-        query = self.search.text().casefold()
-        group = self.groups.currentText()
-        self.host_table.setRowCount(0)
-        for host in sorted(self.workspace.hosts, key=lambda h: (h.group.casefold(), h.name.casefold())):
-            if group not in ("All groups", "", host.group):
+        query = self.search.text().strip().casefold()
+        selected = self.host_tree.currentItem()
+        identity = (selected.data(0, Qt.UserRole), selected.data(0, Qt.UserRole + 1)) if selected else None
+        if not getattr(self, "_last_search", ""):
+            for index in range(self.host_tree.topLevelItemCount()):
+                item = self.host_tree.topLevelItem(index)
+                self._group_expansion[item.data(0, Qt.UserRole)] = item.isExpanded()
+        self._last_search = query
+        self.host_tree.blockSignals(True)
+        self.host_tree.clear()
+        visible_devices = 0
+        first_device = None
+        selected_item = None
+        for group in sorted(self.workspace.groups, key=lambda g: g.name.casefold()):
+            members = [h for h in self.workspace.hosts if h.group == group.name]
+            matches = [h for h in members if not query or query in " ".join([h.name, h.address, h.group, h.tags]).casefold()]
+            if query and query not in group.name.casefold() and not matches:
                 continue
-            if query and query not in " ".join([host.name, host.address, host.group, host.tags]).casefold():
-                continue
-            put_row(self.host_table, [host.name, host.address, host.protocol.upper(), host.group], host.id)
-        self.host_count.setText(f"{len(self.workspace.hosts)} saved connections    ·    {len({h.group for h in self.workspace.hosts})} groups    ·    Stored locally")
-        if self.host_table.rowCount():
-            self.host_table.selectRow(0)
+            count = f"{len(matches)} of {len(members)}" if len(matches) != len(members) else str(len(members))
+            item = QTreeWidgetItem([f"{group.name}   ·   {count} devices", "", ""])
+            item.setSizeHint(0, QSize(0, 46))
+            item.setData(0, Qt.UserRole, group.name)
+            item.setData(0, Qt.UserRole + 1, "group")
+            item.setToolTip(0, f"{group.name}: select to edit shared credentials")
+            font = item.font(0)
+            font.setBold(True)
+            item.setFont(0, font)
+            self.host_tree.addTopLevelItem(item)
+            item.setFirstColumnSpanned(True)
+            if identity == (group.name, "group"):
+                selected_item = item
+            for host in sorted(matches, key=lambda h: h.name.casefold()):
+                child = QTreeWidgetItem([host.name, host.address, host.protocol.upper()])
+                child.setSizeHint(0, QSize(0, 46))
+                child.setData(0, Qt.UserRole, host.id)
+                child.setData(0, Qt.UserRole + 1, "host")
+                source = "Group credentials" if host.inherit_credentials else "Custom credentials"
+                child.setToolTip(0, f"{host.name}\n{source}")
+                item.addChild(child)
+                first_device = first_device or child
+                if identity == (host.id, "host"):
+                    selected_item = child
+            item.setExpanded(True if query else self._group_expansion.get(group.name, True))
+            visible_devices += len(matches)
+        target = selected_item or (first_device if query else self.host_tree.topLevelItem(0))
+        if target:
+            self.host_tree.setCurrentItem(target)
+        self.host_tree.blockSignals(False)
+        count = f"{visible_devices} of {len(self.workspace.hosts)} devices" if query else f"{len(self.workspace.hosts)} devices"
+        self.host_count.setText(f"{len(self.workspace.groups)} groups    ·    {count}    ·    Stored locally")
         self.update_details()
 
     def update_details(self):
         host = self.selected_host()
-        for control in [self.connect_button, self.edit_button, self.delete_button]:
-            control.setEnabled(host is not None)
-        if not host:
-            self.detail_title.setText("No host selected")
-            self.detail_body.setText("Add a connection or change your search to find a saved host.")
-            return
-        self.detail_title.setText(host.name)
-        self.detail_body.setText(f"{host.protocol.upper()}  /  {host.address}:{host.port}\n\n"
-                                 f"Group: {host.group}\n\nUser: {host.username or 'Interactive / SSH agent'}\n\n"
-                                 f"Tags: {host.tags or 'None'}\n\n"
-                                 f"Reconnect: {'automatic' if host.auto_reconnect else 'manual'}")
+        group = self.selected_group()
+        self.connect_button.setVisible(host is not None)
+        self.connect_button.setEnabled(host is not None)
+        self.add_device_button.setVisible(host is None)
+        self.add_device_button.setEnabled(group is not None)
+        self.edit_button.setEnabled(group is not None)
+        self.edit_button.setText("Edit device" if host else "Edit group")
+        self.delete_button.setText("Delete device" if host else "Delete group")
+        members = [h for h in self.workspace.hosts if group and h.group == group.name]
+        self.delete_button.setEnabled(host is not None or (group is not None and not members))
+        self.delete_button.setToolTip("Move or delete its devices before deleting this group." if not host and members else "")
+        self.detail_kind.setText("DEVICE DETAILS" if host else "GROUP DETAILS")
+        if host:
+            effective = self.workspace.resolve_host(host)
+            source = f"Group defaults ({host.group})" if host.inherit_credentials else "Custom for this device"
+            self.detail_title.setText(host.name)
+            self.detail_body.setText(f"{host.protocol.upper()}  /  {host.address}:{host.port}\n\n"
+                                     f"Group: {host.group}\n\nCredentials: {source}\n"
+                                     f"Username: {effective.username or 'Not set'}\n"
+                                     f"Password: {'Saved' if effective.password else 'Not set'}\n"
+                                     f"SSH key: {'Selected' if effective.key_path else 'Not set'}\n\n"
+                                     f"Tags: {host.tags or 'None'}\n\n"
+                                     + ("Telnet login is interactive.\n\n" if host.protocol == "telnet" else "")
+                                     + f"Reconnect: {'automatic' if host.auto_reconnect else 'manual'}")
+        elif group:
+            inherited = sum(h.inherit_credentials for h in members)
+            self.detail_title.setText(group.name)
+            self.detail_body.setText(f"{len(members)} devices\n{inherited} use group credentials\n"
+                                     f"{len(members) - inherited} use custom credentials\n\n"
+                                     f"DEFAULT CREDENTIALS\nUsername: {group.username or 'Not set'}\n"
+                                     f"Password: {'Saved' if group.password else 'Not set'}\n"
+                                     f"SSH key: {'Selected' if group.key_path else 'Not set'}\n\n"
+                                     "New devices use these defaults. Set custom credentials in a device's settings when needed.\n\n"
+                                     "Changes apply to new sessions and file operations. Existing sessions keep their credentials.")
+        else:
+            self.detail_title.setText("No matches" if self.search.text() else "Create your first group")
+            self.detail_body.setText("Try another group, device name, address or tag." if self.search.text()
+                                     else "Create a group for a site or project, set its default credentials, then add your devices.")
 
     def save_workspace(self):
         self.workspace.save()
         self.statusBar().showMessage("Workspace saved • Credentials encrypted")
 
+    def edit_selection(self):
+        self.edit_host() if self.selected_host() else self.edit_group()
+
+    def delete_selection(self):
+        self.delete_host() if self.selected_host() else self.delete_group()
+
+    def new_group(self):
+        dialog = GroupDialog(self, groups=self.workspace.groups)
+        if dialog.exec() != QDialog.Accepted:
+            return None
+        group = dialog.result_group
+        self.workspace.groups.append(group)
+        try:
+            self.save_workspace()
+        except Exception as exc:
+            self.workspace.groups.remove(group)
+            QMessageBox.warning(self, "Cannot save group", str(exc))
+            return None
+        self.search.clear()
+        self.refresh_hosts()
+        self.select_vault_item(group.name, "group")
+        return group
+
+    def edit_group(self):
+        group = self.selected_group()
+        if not group:
+            return
+        members = [h for h in self.workspace.hosts if h.group == group.name]
+        dialog = GroupDialog(self, group, groups=self.workspace.groups, device_count=len(members))
+        if dialog.exec() != QDialog.Accepted:
+            return
+        previous_groups, previous_hosts = self.workspace.groups[:], self.workspace.hosts[:]
+        updated = dialog.result_group
+        self.workspace.groups[self.workspace.groups.index(group)] = updated
+        self.workspace.hosts = [replace(h, group=updated.name) if h.group == group.name else h for h in self.workspace.hosts]
+        try:
+            self.save_workspace()
+        except Exception as exc:
+            self.workspace.groups, self.workspace.hosts = previous_groups, previous_hosts
+            QMessageBox.warning(self, "Cannot save group", str(exc))
+            self.refresh_hosts()
+            return
+        self.search.clear()
+        self.refresh_hosts()
+        self.select_vault_item(updated.name, "group")
+
+    def delete_group(self):
+        group = self.selected_group()
+        if not group:
+            return
+        if any(h.group == group.name for h in self.workspace.hosts):
+            QMessageBox.information(self, "Group contains devices", "Move or delete its devices before deleting this group.")
+            return
+        if QMessageBox.question(self, "Delete group", f"Delete the empty group {group.name} and its default credentials?") != QMessageBox.Yes:
+            return
+        previous = self.workspace.groups[:]
+        self.workspace.groups.remove(group)
+        try:
+            self.save_workspace()
+        except Exception as exc:
+            self.workspace.groups = previous
+            QMessageBox.warning(self, "Cannot delete group", str(exc))
+        self.refresh_hosts()
+
     def new_host(self):
-        dialog = HostDialog(self)
+        group = self.selected_group()
+        if not self.workspace.groups:
+            group = self.new_group()
+            if group is None:
+                return
+        dialog = HostDialog(self, groups=self.workspace.groups, selected_group=group.name if group else None)
         if dialog.exec() == QDialog.Accepted:
             self.workspace.hosts.append(dialog.result_host)
             try:
                 self.save_workspace()
             except Exception as exc:
                 self.workspace.hosts.pop()
-                QMessageBox.warning(self, "Cannot save connection", str(exc))
+                QMessageBox.warning(self, "Cannot save device", str(exc))
+                self.refresh_hosts()
+                return
+            self.search.clear()
             self.refresh_hosts()
+            self.select_vault_item(dialog.result_host.id, "host")
 
     def edit_host(self):
         host = self.selected_host()
         if not host:
             return
-        dialog = HostDialog(self, host)
+        dialog = HostDialog(self, host, groups=self.workspace.groups)
         if dialog.exec() == QDialog.Accepted:
             index = self.workspace.hosts.index(host)
             self.workspace.hosts[index] = dialog.result_host
@@ -660,19 +753,24 @@ class MainWindow(QMainWindow):
                 self.save_workspace()
             except Exception as exc:
                 self.workspace.hosts[index] = host
-                QMessageBox.warning(self, "Cannot save connection", str(exc))
+                QMessageBox.warning(self, "Cannot save device", str(exc))
+                self.refresh_hosts()
+                return
+            self.search.clear()
             self.refresh_hosts()
+            self.select_vault_item(host.id, "host")
 
     def delete_host(self):
         host = self.selected_host()
-        if not host or QMessageBox.question(self, "Delete connection", f"Delete {host.name}? Its recordings will remain available.") != QMessageBox.Yes:
+        if not host or QMessageBox.question(self, "Delete device", f"Delete {host.name}? Its recordings will remain available.") != QMessageBox.Yes:
             return
+        index = self.workspace.hosts.index(host)
         self.workspace.hosts.remove(host)
         try:
             self.save_workspace()
         except Exception as exc:
-            self.workspace.hosts.append(host)
-            QMessageBox.warning(self, "Cannot delete connection", str(exc))
+            self.workspace.hosts.insert(index, host)
+            QMessageBox.warning(self, "Cannot delete device", str(exc))
         self.refresh_hosts()
 
     def make_sessions_page(self):
@@ -928,6 +1026,11 @@ class MainWindow(QMainWindow):
         if any(job.isRunning() for job in self.jobs):
             self.transfer_status.setText("A transfer operation is already running.")
             return
+        try:
+            host = self.workspace.resolve_host(host)
+        except ValueError as exc:
+            QMessageBox.warning(self, "Cannot start file operation", str(exc))
+            return
         def execute(progress):
             client = TransferClient(host, self.known_hosts_path)
             self.active_transfer_client = client
@@ -1134,6 +1237,11 @@ class MainWindow(QMainWindow):
 
 def demo_workspace(folder):
     workspace = Workspace.create(Path(folder) / "PiNT demo.pint", "local-demo-passphrase")
+    workspace.groups = [
+        Group(name="Home lab", username="admin"),
+        Group(name="Project Atlas", username="admin"),
+        Group(name="Workshop", username="operator"),
+    ]
     workspace.hosts = [
         Host(name="Core switch", address="192.0.2.10", username="admin", group="Home lab", tags="switch, core"),
         Host(name="Edge router", address="192.0.2.1", username="admin", group="Home lab", tags="router"),
@@ -1144,6 +1252,10 @@ def demo_workspace(folder):
         Host(name="Firmware archive", address="203.0.113.20", protocol="ftp", username="operator", group="Workshop", tags="firmware"),
         Host(name="Bench switch", address="203.0.113.10", protocol="telnet", group="Workshop", tags="bench"),
     ]
+    for host in workspace.hosts:
+        host.inherit_credentials = host.name != "Storage server"
+        if host.inherit_credentials:
+            host.username = ""
     workspace.save()
     return workspace
 

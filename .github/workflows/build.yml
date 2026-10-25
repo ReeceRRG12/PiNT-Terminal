@@ -1,4 +1,6 @@
-name: Build desktop beta
+# Validation artefacts only. Release packages use the locally verified runtimes.
+# Align runtime notices before distributing CI-built binaries.
+name: Build desktop validation packages
 on:
   workflow_dispatch:
 jobs:

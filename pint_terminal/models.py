@@ -11,6 +11,38 @@ DEFAULT_PORTS = {"ssh": 22, "telnet": 23, "sftp": 22, "ftp": 21}
 
 
 @dataclass
+class Group:
+    name: str
+    username: str = ""
+    password: str = ""
+    key_path: str = ""
+
+    def validate(self) -> Group:
+        for name in ("name", "username", "password", "key_path"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or "\x00" in value:
+                raise ValueError(f"Group {name} must be text without null characters.")
+        if not self.name.strip():
+            raise ValueError("A group needs a name.")
+        return self
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> Group:
+        if not isinstance(value, dict):
+            raise ValueError("A group must be an object.")
+        if set(value) - {item.name for item in fields(cls)}:
+            raise ValueError("The group contains unsupported fields.")
+        try:
+            return cls(**value).validate()
+        except TypeError as exc:
+            raise ValueError("The group is invalid.") from exc
+
+
+@dataclass
 class Host:
     id: str = field(default_factory=lambda: str(uuid4()))
     name: str = ""
@@ -23,6 +55,7 @@ class Host:
     group: str = "Ungrouped"
     tags: str = ""
     auto_reconnect: bool = True
+    inherit_credentials: bool = False
 
     def __post_init__(self) -> None:
         if self.port is None:
@@ -41,6 +74,8 @@ class Host:
             raise ValueError("The port must be between 1 and 65535.")
         if not isinstance(self.auto_reconnect, bool):
             raise ValueError("Automatic reconnect must be a boolean.")
+        if not isinstance(self.inherit_credentials, bool):
+            raise ValueError("Group credential inheritance must be a boolean.")
         if any(character.isspace() for character in self.address):
             raise ValueError("Use a hostname or IP address without spaces.")
         return self

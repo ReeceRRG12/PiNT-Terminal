@@ -1,5 +1,17 @@
 # Platform acceptance
 
+## 0.2.0 group/device vault verification
+
+On 25 October 2026, the 0.2.0 source passed **133 tests and 7 subtests on each platform**, with no failures or skips: macOS 26.5.1 Apple Silicon, Python 3.14.4 (27.32 seconds); Windows 11 ARM64 10.0.22621.4317 using x64 Python 3.14.8 under emulation (126.41 seconds). Evidence is retained in `artifacts/macos-0.2.0-tests.xml` and `artifacts/windows-0.2.0-beta.1-tests.xml`. Removing the Beta UI wording for stable publication subsequently passed 17 focused GUI tests; application behaviour was unchanged.
+
+Native Windows form checks exercised group creation, inherited and custom credentials, device selection/search, saving/reopening, and the minimum vault size at 125% scaling. Mac and Windows screenshots were visually checked. The synthetic macOS → Windows → macOS round trip preserved rotated group defaults, custom blank credentials, empty groups, Unicode settings and recordings. A legacy vault migrated on Windows with an exact encrypted original backup, then reopened with its recording on macOS. No production device or user vault was used.
+
+The stable Mac DMG contains the 0.2.0 app and an Applications shortcut. Image verification, read-only mounting, copying the app out, deep/strict signature verification and native launch passed. The app retains an ad hoc signature and is not notarised. The standalone Windows EXE embeds its runtime and notices, supplies 0.2.0 file/product version metadata, and passed native Vault and Recordings launches from a temporary folder containing only the EXE. Both package source manifests match the release source. The Windows VM was restored to paused with idle pause on.
+
+The initial Windows runner exceeded its four-minute overall timeout after 84 passing tests. The final diagnostic rerun completed without a stuck test or code correction. The earlier folder-package extraction encountered a transient DLL lock during temporary cleanup; bounded retry and repeat extracted-package launch passed. Qt emitted a DPI-awareness warning during source form checks, but the scaled layout and controls were inspected successfully. The Windows build retains system-DLL resolution warnings under ARM emulation, as in 0.1.1; native launch is checked separately.
+
+Stable publication is a release designation, not evidence of every planned feature or platform. Conventional x64 hardware, Intel macOS, native Windows ARM64, extended physical keyboard/clipboard and real-device acceptance remain pending, together with signing/notarisation.
+
 Beta publication verification on 24 October 2026: [GitHub CI passed on macOS and Windows with Python 3.12](https://github.com/ReeceRRG12/PiNT-Terminal/actions/runs/40095170700) for commit `8a8e196`. The historical evidence below describes earlier local checks.
 
 Initial 0.1.0 evidence on 24 October 2026: final local suites pass on both tested environments. macOS 26.5.1 Apple Silicon with Python 3.14.4: **70 passed, 7 subtests passed** in 11.92 seconds. Windows 11 ARM64 (10.0.22621.4317) with x64 Python 3.14.8 under emulation: **69 passed, 1 skipped, 7 subtests passed** in 36.00 seconds. The skip is a symlink fixture requiring unavailable Windows privileges. This does not establish native Windows ARM64 or conventional x64 hardware acceptance. GitHub workflows target Python 3.12 but have not been dispatched.

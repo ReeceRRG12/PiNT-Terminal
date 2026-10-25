@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import binascii
 from contextlib import closing
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -19,11 +20,12 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
-from .models import Host
+from .models import Group, Host
 
 
 _FORMAT = "pint-workspace"
 _VERSION = 1
+_PAYLOAD_VERSION = 2
 _KDF = {"name": "scrypt", "n": 131072, "r": 8, "p": 1}
 _AAD = b"PiNT Terminal workspace v1"
 MAX_WORKSPACE_BYTES = 16 * 1024 * 1024
@@ -83,13 +85,52 @@ def _atomic_write(path: Path, payload: bytes) -> None:
 
 
 class Workspace:
-    def __init__(self, path: Path, key: bytes, salt: bytes, hosts: list[Host], settings: dict[str, Any]):
+    def __init__(self, path: Path, key: bytes, salt: bytes, hosts: list[Host], settings: dict[str, Any],
+                 groups: list[Group] | None = None):
         self.path = Path(path)
         self.key = key
         self.hosts = hosts
         self.settings = settings
+        self.groups = list(groups) if groups is not None else []
+        self.migration_backup_path: Path | None = None
+        self._legacy_workspace_bytes: bytes | None = None
         self._salt = salt
         self._lock = threading.RLock()
+        self._validate_groups(allow_new=groups is None)
+
+    def find_group(self, name: str) -> Group | None:
+        return next((group for group in self.groups if group.name == name), None)
+
+    def group_names(self) -> list[str]:
+        return sorted((group.name for group in self.groups), key=str.casefold)
+
+    def _validate_groups(self, *, allow_new: bool) -> None:
+        names = set()
+        for group in self.groups:
+            group.validate()
+            if group.name in names:
+                raise VaultError("The workspace contains duplicate group names.")
+            names.add(group.name)
+        for host in self.hosts:
+            host.validate()
+            if host.group not in names:
+                if not allow_new or host.inherit_credentials:
+                    raise VaultError(f'The group for device "{host.name}" is missing.')
+                group = Group(name=host.group).validate()
+                self.groups.append(group)
+                names.add(group.name)
+
+    def resolve_host(self, host: Host) -> Host:
+        """Take a connection snapshot without copying defaults into the saved device."""
+        with self._lock:
+            host.validate()
+            if not host.inherit_credentials:
+                return replace(host)
+            group = self.find_group(host.group)
+            if group is None:
+                raise VaultError(f'The group for device "{host.name}" is missing.')
+            group.validate()
+            return replace(host, username=group.username, password=group.password, key_path=group.key_path)
 
     @property
     def recordings_path(self) -> Path:
@@ -128,7 +169,8 @@ class Workspace:
             key = _derive(password, salt)
             plaintext = AESGCM(key).decrypt(nonce, ciphertext, _AAD)
             payload = json.loads(plaintext)
-            if not isinstance(payload, dict) or payload.get("version") != _VERSION:
+            if (not isinstance(payload, dict) or type(payload.get("version")) is not int
+                    or payload["version"] not in (1, _PAYLOAD_VERSION)):
                 raise VaultError("The encrypted workspace content is unsupported.")
             host_data, settings = payload.get("hosts"), payload.get("settings")
             if not isinstance(host_data, list) or not isinstance(settings, dict):
@@ -136,7 +178,22 @@ class Workspace:
             hosts = [Host.from_dict(host) for host in host_data]
             if len({host.id for host in hosts}) != len(hosts):
                 raise VaultError("The workspace contains duplicate host IDs.")
-            return cls(path, key, salt, hosts, settings)
+            if payload["version"] == 1:
+                if any("inherit_credentials" in host for host in host_data):
+                    raise VaultError("The legacy workspace contains unsupported credential settings.")
+                # Older profiles allowed an empty group label. Keep their own
+                # credentials and give those devices a visible home in the vault.
+                hosts = [replace(host, group=host.group if host.group.strip() else "Ungrouped") for host in hosts]
+                groups = None
+            else:
+                group_data = payload.get("groups")
+                if not isinstance(group_data, list):
+                    raise VaultError("The encrypted workspace groups are invalid.")
+                groups = [Group.from_dict(group) for group in group_data]
+            workspace = cls(path, key, salt, hosts, settings, groups)
+            if payload["version"] == 1:
+                workspace._legacy_workspace_bytes = raw
+            return workspace
         except InvalidTag as exc:
             raise VaultError("The passphrase is incorrect or the workspace has been damaged.") from exc
         except (UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError, RecursionError) as exc:
@@ -151,7 +208,9 @@ class Workspace:
                     raise VaultError("Workspace settings must be an object.")
                 if len({host.id for host in self.hosts}) != len(self.hosts):
                     raise VaultError("The workspace contains duplicate host IDs.")
-                payload = _json({"version": _VERSION, "hosts": [host.to_dict() for host in self.hosts], "settings": self.settings})
+                self._validate_groups(allow_new=True)
+                payload = _json({"version": _PAYLOAD_VERSION, "hosts": [host.to_dict() for host in self.hosts],
+                                 "groups": [group.to_dict() for group in self.groups], "settings": self.settings})
                 nonce = os.urandom(12)
                 ciphertext = AESGCM(self.key).encrypt(nonce, payload, _AAD)
                 encoded = _json({
@@ -166,7 +225,49 @@ class Workspace:
                 raise VaultError("The workspace contains invalid host details or settings.") from exc
             if len(encoded) > MAX_WORKSPACE_BYTES:
                 raise VaultError("The workspace exceeds the supported size.")
+            self._backup_legacy_workspace()
             _atomic_write(self.path, encoded)
+            self._legacy_workspace_bytes = None
+
+    def _backup_legacy_workspace(self) -> None:
+        """Preserve the original encrypted file before its first schema upgrade."""
+        original = self._legacy_workspace_bytes
+        if original is None:
+            return
+        if self.migration_backup_path is not None:
+            try:
+                with self.migration_backup_path.open("rb") as stream:
+                    if stream.read(MAX_WORKSPACE_BYTES + 1) == original:
+                        return
+            except OSError:
+                pass
+        candidate: Path | None = None
+        created = False
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            index = 1
+            while True:
+                suffix = "" if index == 1 else f"-{index}"
+                candidate = self.path.with_name(f"{self.path.stem}.v1-backup{suffix}.pint")
+                try:
+                    descriptor = os.open(candidate, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                    created = True
+                    break
+                except FileExistsError:
+                    index += 1
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(original)
+                stream.flush()
+                os.fsync(stream.fileno())
+            self.migration_backup_path = candidate
+        except OSError as exc:
+            if created and candidate is not None:
+                try:
+                    candidate.unlink()
+                except OSError:
+                    pass
+            raise VaultError("The original workspace backup could not be saved. "
+                             "The workspace has not been upgraded. Check its location and available disk space.") from exc
 
     def export_bundle(self, destination: str | Path) -> Path:
         destination = Path(destination)

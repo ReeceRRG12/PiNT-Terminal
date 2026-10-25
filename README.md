@@ -1,17 +1,17 @@
 # PiNT Terminal
 
-A Python desktop terminal for macOS and Windows, using the PiNT Desktop navy and teal design language. **Early Access Beta**: features and compatibility are still being tested. Some planned features remain in development.
+A Python desktop terminal for macOS and Windows, using the PiNT Desktop navy and teal design language. Version 0.2.0 organises the vault as groups containing devices, with shared group credentials and optional custom credentials per device.
 
-## Early Access Beta downloads
+## Downloads
 
-[Download version 0.1.1-beta.1](https://github.com/ReeceRRG12/PiNT-Terminal/releases/tag/v0.1.1-beta.1).
+[Download the latest stable release](https://github.com/ReeceRRG12/PiNT-Terminal/releases/latest) or [view version 0.2.0](https://github.com/ReeceRRG12/PiNT-Terminal/releases/tag/v0.2.0).
 
-- **macOS Apple Silicon:** download the macOS arm64 ZIP, extract it and open `PiNT Terminal.app`.
-- **Windows:** download the Windows x64 ZIP, extract the complete folder and run `PiNT Terminal.exe` inside it. The local Windows build was tested under x64 emulation in a Windows 11 ARM64 Parallels VM.
+- **macOS Apple Silicon:** open `PiNT-Terminal-0.2.0-macOS-arm64.dmg`, drag `PiNT Terminal.app` to Applications, then open it.
+- **Windows:** download and run `PiNT-Terminal-0.2.0-Windows-x64.exe`. This is a self-contained executable; Python and a separate runtime folder are not required. The local Windows build was tested under x64 emulation in a Windows 11 ARM64 VM.
 
-These are development builds: Windows is unsigned; macOS has a local development signature and is not notarised. Finish active sessions and close an earlier version before opening the same workspace in this build.
+Windows is unsigned; macOS uses a local development signature and is not notarised. Finish active sessions and close an earlier version before opening the same workspace in this release. Platform coverage and remaining feature limits are documented below.
 
-Version 0.1.1 fixes control characters appearing as boxes in recorded output and hostname failures during SSH/SFTP key approval. Existing recordings are rendered on read and raw stored data stays intact. Raw exports preserve the original control characters and line endings on both platforms.
+Existing devices keep their saved credentials when upgraded. An encrypted copy of an older vault is saved before its first format upgrade. Upgraded vaults require 0.2.0 or later; see **First use** for details and rollback instructions.
 
 ## Run
 
@@ -45,7 +45,7 @@ python -m pint_terminal --demo
 
 ## Included
 
-- Saved, searchable SSH, Telnet, FTP and SFTP profiles, grouped by project, with tags and editable credentials.
+- A searchable vault of groups and devices, with SSH, Telnet, FTP and SFTP profiles and tags. Each group can store a standard username, password and SSH key path; individual devices can use their own credentials.
 - Multiple terminal tabs with ANSI colour, cursor movement, alternate screens, keyboard input, selection, copy and paste.
 - Disk-backed terminal scrollback with no fixed historical row limit. Only the active screen and visible historical rows are kept by the renderer. Available disk space is the practical limit.
 - Encrypted output recordings which remain readable after disconnecting or restarting the application. Raw transcripts can be exported explicitly.
@@ -58,23 +58,29 @@ python -m pint_terminal --demo
 ## First use
 
 1. Create an encrypted workspace and choose a passphrase of at least 12 characters.
-2. Add a connection using its hostname/IP, protocol, port and authentication details. Telnet login happens interactively in the terminal.
-3. Select the host and connect. For the first SSH/SFTP connection, verify the fingerprint before approving its key.
+2. In **Vault**, choose **New group** for a site or project and set its default credentials. Select the group and choose **Add device to group**, then enter the device's hostname/IP, protocol and port.
+3. New devices select **Use group credentials**. To override the defaults, edit the device and choose **Custom credentials**. Select a device and connect. For the first SSH/SFTP connection, verify the fingerprint before approving its key. Telnet login remains interactive.
 4. Revisit completed output under **Recordings**. It is paginated by received chunks; the readable view interprets backspaces, carriage returns and line-editing controls, and hides formatting/control strings. Export retains the original text stream and control sequences.
 5. Use **Export workspace** to create a `.pintbundle`. Import it on another device using the same passphrase.
 
 Use **Lock & close** to disconnect, save and close the application. Reopening requires the workspace passphrase. Window size and the selected section are restored. Saved profiles move between devices; live network connections and remote shell processes do not migrate.
 
+Group credentials apply as a complete set, including blank fields. Custom credentials also form a complete set: a blank custom password or key never falls back to the group. Changing a group updates the defaults used by new sessions and file operations. Existing terminal tabs keep their connection details through reconnects; open a new tab to use updated credentials. Move a device by changing its group in **Edit device**. Groups can be renamed, and empty groups can be deleted.
+
+Older workspaces open with their existing device credentials preserved as **Custom credentials**. Select **Use group credentials** for devices that should share the defaults. On first save, the app keeps an encrypted copy of the original vault before upgrading its format. Upgraded workspaces and their exports require version 0.2.0 or a later compatible release; published 0.1.1 cannot open them. Recordings retain their existing format.
+
+The original vault copy is saved beside the workspace as `name.v1-backup.pint`, with a numbered suffix if that name already exists. To return to an older app, close PiNT and preserve the upgraded files separately, then restore that copy under the original workspace filename beside its unchanged `.sessions.sqlite` file. This restores the pre-upgrade device settings; subsequent group and device edits are only in the upgraded vault.
+
 ## Data and security model
 
 A workspace has two adjacent files:
 
-- `name.pint`: AES-256-GCM encrypted profiles, passwords, trusted host keys and settings. Its key is derived with scrypt using a random salt and fixed bounded parameters.
+- `name.pint`: AES-256-GCM encrypted groups, device profiles, passwords, trusted host keys and settings. Its key is derived with scrypt using a random salt and fixed bounded parameters.
 - `name.sessions.sqlite`: encrypted session metadata, received text, events and rendered historical rows. SQLite exposes opaque identifiers and row ordering, not plaintext host names or output.
 
 Workspace saves use atomic replacement. Recording writes use SQLite WAL and full synchronous commits, batched per received rendering chunk. Raw output is persisted in the transport thread before GUI rendering. Recording failures stop the session.
 
-There is no cloud service or passphrase recovery. Back up exported bundles and keep the passphrase separately. Bundle imports are currently limited to 8 GiB of recordings and 16 MiB of workspace data; live history has no corresponding limit. Large archives are exported/imported synchronously in this beta.
+There is no cloud service or passphrase recovery. Back up exported bundles and keep the passphrase separately. Bundle imports are currently limited to 8 GiB of recordings and 16 MiB of workspace data; live history has no corresponding limit. Large archives are exported/imported synchronously.
 
 Private key files are referenced by path and are not embedded in exports. Re-select them on another device or use its SSH agent. Trusted keys are encrypted in the workspace and materialised in a private temporary file while the app is open.
 
@@ -97,8 +103,10 @@ Typed input is not recorded separately. Any text echoed by the remote device, in
 python -m pytest -q
 python -m pint_terminal --demo --screenshot artifacts/hosts.png
 python -m pip install -e '.[build]'
-python -m PyInstaller --noconfirm --clean --distpath dist/0.1.1-beta.1 "PiNT Terminal.spec"
+python -m PyInstaller --noconfirm --clean --distpath dist/0.2.0 "PiNT Terminal.spec"
 ```
+
+On Windows, use `"PiNT Terminal Windows.spec"` in the packaging command to build the self-contained EXE. The original specification produces a macOS app bundle or a Windows folder build. The manual build workflow produces validation archives; release packaging uses the verified platform runtimes and their matching notices.
 
 Tests use temporary workspaces and local loopback servers, with no production-device access. Qt tests run offscreen. Build on each target operating system; PyInstaller is not a cross-compiler. Build from the saved specification to retain the app identifier and version metadata. The macOS development bundle is not a notarised distribution release. [GitHub verification passed on macOS and Windows with Python 3.12](https://github.com/ReeceRRG12/PiNT-Terminal/actions/runs/40095170700) for the initial beta source.
 
